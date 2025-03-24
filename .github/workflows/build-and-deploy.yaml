@@ -21,12 +21,14 @@ jobs:
     # Step 3: Login su Amazon ECR
     - name: Log in to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
+      with:
+        region: us-west-1
 
-    # Step 4: Build delle Immagini e Push su ECR
+      # Step 4: Build delle Immagini e Push su ECR
     - name: Build and Push Docker Images to ECR
       run: |
         # Log in al registro ECR (assicurati di aver creato il repository ECR)
-        REPOSITORY_URI=123456789012.dkr.ecr.us-west-2.amazonaws.com/myrepo
+        REPOSITORY_URI=715841359313.dkr.ecr.eu-west-1.amazonaws.com/sysdig-repo
         IMAGE_TAG=latest
 
         # Build e Push dell'immagine Vote
@@ -66,7 +68,7 @@ jobs:
 
     - name: Update kubeconfig for EKS
       run: |
-        aws eks update-kubeconfig --name my-cluster-name --region us-west-1
+        aws eks update-kubeconfig --name eks-sysdig-cluster --region us-west-1
 
     # Step 8: Deployare le Immagini nel Cluster EKS
     - name: Deploy to EKS
