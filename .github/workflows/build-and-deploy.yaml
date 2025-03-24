@@ -1,0 +1,76 @@
+name: Build, Scan and Deploy to EKS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout del codice
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    # Step 2: Setup Docker Buildx
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    # Step 3: Login su Amazon ECR
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+
+    # Step 4: Build delle Immagini e Push su ECR
+    - name: Build and Push Docker Images to ECR
+      run: |
+        # Log in al registro ECR (assicurati di aver creato il repository ECR)
+        REPOSITORY_URI=123456789012.dkr.ecr.us-west-2.amazonaws.com/myrepo
+        IMAGE_TAG=latest
+
+        # Build e Push dell'immagine Vote
+        docker build -t $REPOSITORY_URI/vote:$IMAGE_TAG ./vote
+        docker push $REPOSITORY_URI/vote:$IMAGE_TAG
+
+        # Build e Push dell'immagine Worker
+        docker build -t $REPOSITORY_URI/worker:$IMAGE_TAG ./worker
+        docker push $REPOSITORY_URI/worker:$IMAGE_TAG
+
+        # Build e Push dell'immagine Result
+        docker build -t $REPOSITORY_URI/result:$IMAGE_TAG ./result
+        docker push $REPOSITORY_URI/result:$IMAGE_TAG
+
+    # Step 5: Installare Sysdig CLI Scanner
+    - name: Install Sysdig CLI Scanner
+      run: |
+        curl -sLO https://download.sysdig.com/scanning/sysdig-cli-scanner/latest/linux-amd64/sysdig-cli-scanner
+        chmod +x sysdig-cli-scanner
+        mv sysdig-cli-scanner /usr/local/bin/
+
+    # Step 6: Scannerizzare le Immagini con Sysdig CLI
+    - name: Scan Images with Sysdig CLI
+      run: |
+        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI/vote:$IMAGE_TAG
+        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI/worker:$IMAGE_TAG
+        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI/result:$IMAGE_TAG
+
+    # Step 7: Configurazione kubeconfig per EKS
+    - name: Set up kubectl and kubeconfig for EKS
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2 # Sostituisci con la tua regione
+        role-to-assume: arn:aws:iam::123456789012:role/eks-cluster-role
+
+    - name: Update kubeconfig for EKS
+      run: |
+        aws eks update-kubeconfig --name my-cluster-name --region us-west-2
+
+    # Step 8: Deployare le Immagini nel Cluster EKS
+    - name: Deploy to EKS
+      run: |
+        kubectl apply -f k8s/vote-deployment.yaml
+        kubectl apply -f k8s/worker-deployment.yaml
+        kubectl apply -f k8s/result-deployment.yaml
