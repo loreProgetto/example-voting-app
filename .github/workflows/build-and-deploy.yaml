@@ -51,8 +51,8 @@ jobs:
     # Step 5: Installare Sysdig CLI Scanner
     - name: Install Sysdig CLI Scanner
       run: |
-        curl -sLO https://download.sysdig.com/scanning/sysdig-cli-scanner/latest/linux-amd64/sysdig-cli-scanner
-        chmod +x sysdig-cli-scanner
+        curl -LO "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
+        chmod +x ./sysdig-cli-scanner
         mv sysdig-cli-scanner /usr/local/bin/
 
     # Step 6: Scannerizzare le Immagini con Sysdig CLI
