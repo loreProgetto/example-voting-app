@@ -29,7 +29,7 @@ jobs:
     - name: Log in to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
 
-      # Step 4: Build delle Immagini e Push su ECR
+      # Step 4: Build delle Immagini e Push su ECRf
     - name: Build and Push Docker Images to ECR
       run: |
         # Log in al registro ECR (assicurati di aver creato il repository ECR)
