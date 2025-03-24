@@ -57,7 +57,8 @@ jobs:
 
     # Step 6: Scannerizzare le Immagini con Sysdig CLI
     - name: Scan Images with Sysdig CLI
-      run: |
+      run:
+        export SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }}
         sysdig-cli-scanner --apiurl https://secure.sysdig.com $REPOSITORY_URI:$IMAGE_TAG
         sysdig-cli-scanner --apiurl https://secure.sysdig.com $REPOSITORY_URI:$IMAGE_TAG
         sysdig-cli-scanner --apiurl https://secure.sysdig.com $REPOSITORY_URI:$IMAGE_TAG
