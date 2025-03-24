@@ -37,16 +37,16 @@ jobs:
         IMAGE_TAG=latest
 
         # Build e Push dell'immagine Vote
-        docker build -t $REPOSITORY_URI/vote:$IMAGE_TAG ./vote
-        docker push $REPOSITORY_URI/vote:$IMAGE_TAG
+        docker build -t $REPOSITORY_URI:$IMAGE_TAG ./vote
+        docker push $REPOSITORY_URI:$IMAGE_TAG
 
         # Build e Push dell'immagine Worker
-        docker build -t $REPOSITORY_URI/worker:$IMAGE_TAG ./worker
-        docker push $REPOSITORY_URI/worker:$IMAGE_TAG
+        docker build -t $REPOSITORY_URI:$IMAGE_TAG ./worker
+        docker push $REPOSITORY_URI:$IMAGE_TAG
 
         # Build e Push dell'immagine Result
-        docker build -t $REPOSITORY_URI/result:$IMAGE_TAG ./result
-        docker push $REPOSITORY_URI/result:$IMAGE_TAG
+        docker build -t $REPOSITORY_URI:$IMAGE_TAG ./result
+        docker push $REPOSITORY_URI:$IMAGE_TAG
 
     # Step 5: Installare Sysdig CLI Scanner
     - name: Install Sysdig CLI Scanner
@@ -58,9 +58,9 @@ jobs:
     # Step 6: Scannerizzare le Immagini con Sysdig CLI
     - name: Scan Images with Sysdig CLI
       run: |
-        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI/vote:$IMAGE_TAG
-        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI/worker:$IMAGE_TAG
-        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI/result:$IMAGE_TAG
+        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI:$IMAGE_TAG
+        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI:$IMAGE_TAG
+        sysdig-cli-scanner --apiurl https://secure.sysdig.com --token ${{ secrets.SYSDIG_SECURE_TOKEN }} $REPOSITORY_URI:$IMAGE_TAG
 
     # Step 7: Configurazione kubeconfig per EKS
     - name: Set up kubectl and kubeconfig for EKS
